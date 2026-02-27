@@ -1,4 +1,6 @@
-html, body {
+html,
+body,
+canvas {
 	background-color: '#006ead' no-repeat center center fixed;
 	min-height: 100%;
 	min-width: 100%;
