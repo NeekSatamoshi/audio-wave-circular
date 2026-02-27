@@ -14,7 +14,7 @@ let primary = '#ffffff'
 //gradient color
 let secondary = '#ffffff'
 //background
-let bg = '#006ead'
+let bg = '#246897'
 
 function setup() {
 	primaryOrig = color(primary)
@@ -36,8 +36,8 @@ function setup() {
 	waveform = []
 
 	numPoints = 512
-
-	circle = new Circle(radius, numPoints)
+	
+	circle = new Circle(radius, numPoints, windowWidth/2, windowHeight/2);
 }
 
 function mousePressed() {
@@ -50,8 +50,6 @@ function mousePressed() {
 
 				waveform = fft.waveform();
 				numPoints = waveform.length;
-
-				circle = new Circle(radius, numPoints);
 
 				title = "Microphone";
 				titleColor.setAlpha(255);
@@ -87,53 +85,52 @@ function drawStart() {
 }
 
 function drawPlaying() {
+
 	waveform = fft.waveform()
 	ampl = amplitude.getLevel()
 	fft.analyze()
 	bass = fft.getEnergy("bass")
 
-	noStroke()
-
 	background(bg)
 
-	push()
+	let centerX = windowWidth / 2
+	let centerY = windowHeight / 2
 
-	translate(windowWidth / 2, windowHeight / 2)
+	noStroke()
 
-	//PULSING CIRCLES
 	push()
 	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.10)))
-	ellipse(0, 0, map(bass, 0, 255, 0, radius * 9))
+	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 9))
 	pop()
 
 	push()
 	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.20)))
-	ellipse(0, 0, map(bass, 0, 255, 0, radius * 8))
+	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 8))
 	pop()
 
 	push()
 	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.35)))
-	ellipse(0, 0, map(bass, 0, 255, 0, radius * 7))
+	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 7))
 	pop()
 
 	push()
 	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.40)))
-	ellipse(0, 0, map(bass, 0, 255, 0, radius * 6))
+	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 6))
 	pop()
 
 	push()
 	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.45)))
-	ellipse(0, 0, map(bass, 0, 255, 0, radius * 5))
+	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 5))
 	pop()
 
 	push()
 	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.5)))
-	ellipse(0, 0, map(bass, 0, 255, 0, radius * 4))
+	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 4))
 	pop()
 
-	circle.update();
+	circle.update()
 	circle.draw()
-	pop()
+
 	drawTitle()
 }
 
