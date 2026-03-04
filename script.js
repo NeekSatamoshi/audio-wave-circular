@@ -1,23 +1,27 @@
-let radius
-let numPoints
-let fft, amplitude
-let primaryOrig
-let waveform
-let circle
-let state = "START"
-let title = ""
-let titleColor
+let radius;
+let fft, amplitude;
+let waveform;
+let circle;
+let state = "START";
+let title = "";
+let titleColor;
 let mic;
+
+let smoothBass = 0;
+let ripples = []
+let threshold = 80
+let lastRippleTime = 0
+let rippleDelay = 250
+let showTitle = false
 
 //main color
 let primary = '#ffffff'
 //gradient color
 let secondary = '#ffffff'
 //background
-let bg = '#246897'
+let bg = '#596975'
 
 function setup() {
-	primaryOrig = color(primary)
 	primary = color(primary)
 	bg = color(bg)
 	secondary = color(secondary)
@@ -29,15 +33,14 @@ function setup() {
 
 	radius = windowHeight / 6
 
-	fft = new p5.FFT()
-
-	amplitude = new p5.Amplitude(0.99)
-
+	fft = new p5.FFT(0.8)
+	amplitude = new p5.Amplitude(0.5)
 	waveform = []
 
-	numPoints = 512
-	
-	circle = new Circle(radius, numPoints, windowWidth/2, windowHeight/2);
+	circle = new Circle(radius);
+
+	smoothBass = 0
+	pixelDensity(1)
 }
 
 function mousePressed() {
@@ -49,16 +52,17 @@ function mousePressed() {
 				amplitude.setInput(mic);
 
 				waveform = fft.waveform();
-				numPoints = waveform.length;
 
 				title = "Microphone";
 				titleColor.setAlpha(255);
+				showTitle = true;
 				state = "PLAYING";
 			});
 		} if (state == 'PLAYING') {
 			mic.stop();
-			title = "Stopped"
+			title = "Stopped";
 			titleColor.setAlpha(255);
+			showTitle = true;
 			state = "START";
 		}
 	}).catch(e => {
@@ -67,7 +71,16 @@ function mousePressed() {
 }
 
 function drawTitle() {
+
+	if(!showTitle) return;
+
 	titleColor.setAlpha(alpha(titleColor) - 5)
+
+	if (alpha(titleColor) <= 0) {
+		showTitle = false
+		return
+	}
+
 	push()
 	fill(titleColor)
 	textSize(100)
@@ -85,11 +98,12 @@ function drawStart() {
 }
 
 function drawPlaying() {
-
 	waveform = fft.waveform()
 	ampl = amplitude.getLevel()
 	fft.analyze()
 	bass = fft.getEnergy("bass")
+
+	smoothBass = lerp(smoothBass, bass, 0.04)
 
 	background(bg)
 
@@ -98,49 +112,70 @@ function drawPlaying() {
 
 	noStroke()
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.10)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 9))
-	pop()
+	if (smoothBass > threshold && millis() - lastRippleTime > rippleDelay) {
+		// console.log("Criando ripple");
+		ripples.push(new Ripple(centerX, centerY, radius * 4))
+		lastRippleTime = millis()
+	}
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.20)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 8))
-	pop()
+	for (let i = ripples.length - 1; i >= 0; i--) {
+		ripples[i].draw()
+		ripples[i].update()
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.35)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 7))
-	pop()
+		if (ripples[i].isDead()) {
+			ripples.splice(i, 1)
+		}
+	}
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.40)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 6))
-	pop()
+	for (let i = ripples.length - 1; i >= 0; i--) {
+		ripples[i].draw()
+		ripples[i].update()
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.45)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 5))
-	pop()
+		if (ripples[i].isDead()) {
+			ripples.splice(i, 1)
+		}
+	}
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.5)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 4))
-	pop()
-
-	circle.update()
 	circle.draw()
-
-	drawTitle()
+	drawTitle();
 }
 
 function draw() {
-	if (state == "START") { drawPlaying(); drawStart() }
-	if (state == "PLAYING") { drawPlaying() }
+	if (state == "START") { drawPlaying(); drawStart(); }
+	if (state == "PLAYING") { drawPlaying(); }
 }
 
 //Atualiza o fundo e o desenho Deixando Responsivo
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight)
 	background(bg)
+}
+
+class Ripple {
+	constructor(x, y, maxR) {
+		this.x = x
+		this.y = y
+		this.r = 0
+		this.maxR = maxR
+		this.speed = 5
+		this.alpha = 180
+	}
+
+	update() {
+		this.r += this.speed
+
+		// fade suave proporcional ao tamanho
+		this.alpha = map(this.r, 0, this.maxR, 180, 0)
+	}
+
+	draw() {
+		noFill()
+		stroke(red(primary), green(primary), blue(primary), this.alpha * 0.6)
+		strokeWeight(2)
+		ellipse(this.x, this.y, this.r)
+	}
+
+	isDead() {
+		return this.r > this.maxR
+	}
 }
