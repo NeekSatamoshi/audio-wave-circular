@@ -1,41 +1,65 @@
 class Circle {
-	constructor(r, n) {
+	constructor(r) {
 		this.r = r
-		this.n = n
-		this.offset = 0
-	}
-
-	update() {
-		this.offset += 1.0   // velocidade da animação
+		this.t = random(1000);
+		this.pg = createGraphics(this.r * 2, this.r * 2);
+		this.pg.pixelDensity(1);
 	}
 
 	draw() {
 		let ctx = drawingContext
-		
-		let centerX = windowWidth / 2
-		let centerY = windowHeight / 2
 
-		// movimento interno do gradiente (orbital)
-		let gradientX = centerX + cos(this.offset) * this.r * 0.4
-		let gradientY = centerY + sin(this.offset) * this.r * 0.4
+		push()
+		translate(width / 2, height / 2)
 
-		let gradient = ctx.createRadialGradient(
-			gradientX,
-			gradientY,
-			this.r * 0.1,
-			centerX,
-			centerY,
-			this.r
-		)
+		ctx.save()
 
-		gradient.addColorStop(0, "#b3edff")
-		gradient.addColorStop(0.4, "#99dbff")
-		gradient.addColorStop(0.7, "#47ceff")
-		gradient.addColorStop(1, "#2a7bbe")
+		// máscara circular
+		ctx.beginPath()
+		ctx.arc(0, 0, this.r, 0, Math.PI * 2)
+		ctx.clip()
 
-		ctx.fillStyle = gradient
+		// fundo neutro
+		ctx.fillStyle = "#93e1f9"
+		ctx.fillRect(-this.r, -this.r, this.r * 2, this.r * 2)
 
-		noStroke()
-		ellipse(centerX, centerY, this.r * 2)
+		const colors = [
+			"#056cb1",
+			"#3676aa",
+			"#61aae5",
+		]
+
+		let time = millis() * 0.0003
+
+		ctx.globalCompositeOperation = "source-over"
+		ctx.filter = "blur(80px)"
+
+		let totalBlobs = 3
+
+		for (let i = 0; i < totalBlobs; i++) {
+
+			let colorIndex = i % colors.length
+			let x = (noise(i * 300 + time) - 0.5) * this.r * 2.5
+			let y = (noise(i * 400 + time + 100) - 0.5) * this.r * 2.5
+
+			// RAIO MENOR = menos mistura
+			let gradient = ctx.createRadialGradient(
+				x, y, 0,
+				x, y, this.r * 0.7
+			)
+
+			gradient.addColorStop(0, colors[colorIndex])
+			gradient.addColorStop(0.5, colors[colorIndex])
+			gradient.addColorStop(1, "transparent")
+
+			noStroke()
+			ctx.fillStyle = gradient
+			ctx.fillRect(-this.r * 2, -this.r * 2, this.r * 4, this.r * 4)
+		}
+
+		ctx.filter = "none"
+
+		ctx.restore()
+		pop()
 	}
 }
