@@ -47,10 +47,7 @@ class Circle {
 				x, y, 0,
 				x, y, this.r * 0.7
 			)
-
-			/* gradient.addColorStop(0, colors[colorIndex])
-			   gradient.addColorStop(0.6, colors[colorIndex])
-			   gradient.addColorStop(1, "transparent") */
+			
 			gradient.addColorStop(0, colors[colorIndex])
 			gradient.addColorStop(0.3, colors[colorIndex])
 			gradient.addColorStop(1, "transparent")
@@ -65,15 +62,3 @@ class Circle {
 		pop()
 	}
 }
-
-/* gradient1.addColorStop(0, "#b3edff")
-gradient1.addColorStop(0.4, "#99dbff")
-gradient1.addColorStop(0.7, "#47ceff")
-gradient1.addColorStop(1, "#2a7bbe") */
-
-/* COLORS SET ROXO= [
-			ctx.fillStyle = "#00CED1"
-			"#8A2BE2",
-			"#000080"
-		] */
-
