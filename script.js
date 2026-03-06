@@ -14,7 +14,7 @@ let primary = '#ffffff'
 //gradient color
 let secondary = '#ffffff'
 //background
-let bg = '#246897'
+let bg = '#596975'
 
 function setup() {
 	primaryOrig = color(primary)
@@ -36,44 +36,51 @@ function setup() {
 	waveform = []
 
 	numPoints = 512
-	
-	circle = new Circle(radius, numPoints, windowWidth/2, windowHeight/2);
+
+	circle = new Circle(radius);
 }
 
 function mousePressed() {
-	userStartAudio().then(() => {
-		if (!mic || state == "START") {
+	userStartAudio();
+
+	if (state === "START") {
+
+		if (!mic) {
 			mic = new p5.AudioIn();
-			mic.start(() => {
-				fft.setInput(mic);
-				amplitude.setInput(mic);
-
-				waveform = fft.waveform();
-				numPoints = waveform.length;
-
-				title = "Microphone";
-				titleColor.setAlpha(255);
-				state = "PLAYING";
-			});
-		} if (state == 'PLAYING') {
-			mic.stop();
-			title = "Stopped"
-			titleColor.setAlpha(255);
-			state = "START";
 		}
-	}).catch(e => {
-		alert("Unable to start audio: " + e.message);
-	});
+
+		mic.start();
+
+		fft.setInput(mic);
+		amplitude.setInput(mic);
+
+		title = "Microfone";
+		titleColor.setAlpha(255);
+		state = "PLAYING";
+
+	} else {
+
+		if (mic) {
+			mic.stop();
+		}
+
+		title = "Stopped";
+		titleColor.setAlpha(255);
+		state = "START";
+	}
 }
 
 function drawTitle() {
-	titleColor.setAlpha(alpha(titleColor) - 5)
-	push()
-	fill(titleColor)
-	textSize(100)
-	textAlign(CENTER, CENTER)
-	text(title, 0, 0, windowWidth, windowHeight)
-	pop()
+	let currentAlpha = alpha(titleColor);
+	if (currentAlpha > 0) {
+		titleColor.setAlpha(currentAlpha - 5);
+	}
+	push();
+	fill(titleColor);
+	textSize(100);
+	textAlign(CENTER, CENTER);
+	text(title, 0, 0, width, height);
+	pop();
 }
 
 function drawStart() {
@@ -93,50 +100,37 @@ function drawPlaying() {
 
 	background(bg)
 
-	let centerX = windowWidth / 2
-	let centerY = windowHeight / 2
-
 	noStroke()
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.10)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 9))
-	pop()
+	let level = amplitude.getLevel()
+	fft.analyze()
+	let bass = fft.getEnergy("bass")
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.20)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 8))
-	pop()
-
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.35)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 7))
-	pop()
-
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.40)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 6))
-	pop()
-
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.45)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 5))
-	pop()
-
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.5)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 4))
-	pop()
-
-	circle.update()
-	circle.draw()
+	circle.update(level, bass)
+	circle.draw(level, bass)
 
 	drawTitle()
 }
 
 function draw() {
-	if (state == "START") { drawPlaying(); drawStart() }
-	if (state == "PLAYING") { drawPlaying() }
+	background(bg)
+
+	if (state === "PLAYING") {
+
+		let level = amplitude.getLevel()
+		fft.analyze()
+		let bass = fft.getEnergy("bass")
+
+		circle.update(level, bass)
+		circle.draw(level, bass)
+
+	} else {
+
+		circle.update(0, 0)
+		circle.draw(0, 0)
+	}
+
+	drawTitle() // sempre desenha o título por último
 }
 
 //Atualiza o fundo e o desenho Deixando Responsivo
