@@ -64,7 +64,7 @@ class Circle {
 
 		let intensityBoost = map(this.smoothedLevel, 0, 0.3, 0, 40, true)
 
-		// ✨ INTERNO
+		// INTERNO
 		for (let i = 0; i < this.points.length; i++) {
 
 			let p = this.points[i]
@@ -94,7 +94,7 @@ class Circle {
 
 		ctx.restore()
 
-		// núcleo
+		// Núcleo
 		ctx.save()
 		ctx.globalCompositeOperation = "lighter"
 
