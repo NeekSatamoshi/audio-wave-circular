@@ -1,64 +1,79 @@
-let radius
-let numPoints
-let fft, amplitude
-let primaryOrig
-let waveform
-let circle
-let state = "START"
-let title = ""
-let titleColor
+let radius;
+let fft, amplitude;
+let waveform;
+let circle;
+let state = "START";
+let title = "";
+let titleColor;
 let mic;
 
+let smoothBass = 0;
+let ripples = []
+let threshold = 80
+let lastRippleTime = 0
+let rippleDelay = 250
+let showTitle = false
+let titleAlpha = 0
+
+let circleSize = 0
+let circleVelocity = 0
+let baseSize
+
+let ripple1
+let ripple2
+
 //main color
-let primary = '#ffffff'
+let primary = '#8f9eff'
 //gradient color
 let secondary = '#ffffff'
 //background
-let bg = '#246897'
+let bg = '#596975'
 
 function setup() {
-	primaryOrig = color(primary)
 	primary = color(primary)
 	bg = color(bg)
 	secondary = color(secondary)
 	titleColor = color(secondary)
 
 	createCanvas(windowWidth, windowHeight);
-	background(0);
 	angleMode(DEGREES);
+	pixelDensity(1)
 
 	radius = windowHeight / 6
 
-	fft = new p5.FFT()
+	baseSize = radius
+	circleSize = baseSize
+	circleVelocity = 0
 
-	amplitude = new p5.Amplitude(0.99)
-
+	fft = new p5.FFT(0.8)
+	amplitude = new p5.Amplitude(0.5)
 	waveform = []
 
-	numPoints = 512
+	ripple1 = new LiveRipple(75, 0.2)
+	ripple2 = new LiveRipple(150, 0.1)
 	
-	circle = new Circle(radius, numPoints, windowWidth/2, windowHeight/2);
+	circle = new Circle(circleSize)
+	smoothBass = 0
 }
 
 function mousePressed() {
 	userStartAudio().then(() => {
-		if (!mic || state == "START") {
+		if (state === "START") {
 			mic = new p5.AudioIn();
 			mic.start(() => {
 				fft.setInput(mic);
 				amplitude.setInput(mic);
-
-				waveform = fft.waveform();
-				numPoints = waveform.length;
-
 				title = "Microphone";
-				titleColor.setAlpha(255);
+				titleAlpha = 255;
+				showTitle = true;
 				state = "PLAYING";
 			});
-		} if (state == 'PLAYING') {
+
+		} else if (state === "PLAYING") {
 			mic.stop();
-			title = "Stopped"
-			titleColor.setAlpha(255);
+			title = "Stopped";
+			titleAlpha = 255;
+			showTitle = true;
 			state = "START";
 		}
 	}).catch(e => {
@@ -67,13 +82,23 @@ function mousePressed() {
 }
 
 function drawTitle() {
-	titleColor.setAlpha(alpha(titleColor) - 5)
+	if (!showTitle) return;
+
 	push()
+	noStroke()
+	titleColor.setAlpha(titleAlpha)
 	fill(titleColor)
 	textSize(100)
 	textAlign(CENTER, CENTER)
 	text(title, 0, 0, windowWidth, windowHeight)
 	pop()
+
+	titleAlpha -= 4;
+
+	if (titleAlpha <= 0) {
+		titleAlpha = 0;
+		showTitle = false;
+	}
 }
 
 function drawStart() {
@@ -85,62 +110,99 @@ function drawStart() {
 }
 
 function drawPlaying() {
-
-	waveform = fft.waveform()
-	ampl = amplitude.getLevel()
 	fft.analyze()
-	bass = fft.getEnergy("bass")
+	let bass = fft.getEnergy("bass")
+	smoothBass = lerp(smoothBass, bass, 0.08)
 
-	background(bg)
+	let targetExpansion = map(smoothBass, 0, 255, 0, radius * 0.35)
 
-	let centerX = windowWidth / 2
-	let centerY = windowHeight / 2
+	let force = (baseSize + targetExpansion) - circleSize
 
-	noStroke()
+	circleVelocity += force * 0.08
+	circleVelocity *= 0.88
+	circleSize += circleVelocity
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.10)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 9))
-	pop()
+	circle.r = circleSize
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.20)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 8))
-	pop()
+	ripple1.update(smoothBass)
+	ripple2.update(smoothBass)
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.35)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 7))
-	pop()
-
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.40)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 6))
-	pop()
-
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.45)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 5))
-	pop()
-
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.5)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 4))
-	pop()
-
-	circle.update()
+	ripple1.draw(circle.r)
+	ripple2.draw(circle.r)
 	circle.draw()
-
-	drawTitle()
+	
+	drawTitle();
 }
 
 function draw() {
-	if (state == "START") { drawPlaying(); drawStart() }
-	if (state == "PLAYING") { drawPlaying() }
+	background(bg);
+
+	if (state == "PLAYING") {
+		drawPlaying();
+	} else {
+		let force = baseSize - circleSize
+
+		circleVelocity += force * 0.05
+		circleVelocity *= 0.85
+		circleSize += circleVelocity
+		circle.r = circleSize
+
+		ripple1.update(0)
+		ripple2.update(0)
+
+		circle.draw()
+		ripple1.draw(circleSize)
+		ripple2.draw(circleSize)
+
+		drawTitle()
+	}
 }
 
 //Atualiza o fundo e o desenho Deixando Responsivo
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight)
 	background(bg)
+}
+
+class LiveRipple {
+	constructor(maxOffset, transparency) {
+		this.offset = 0
+		this.velocity = 0
+		this.maxOffset = maxOffset
+		this.alpha = 0
+		this.alphaVelocity = 0
+		this.transparency = transparency
+	}
+
+	update(audioForce) {
+		let targetOffset = map(audioForce, 0, 255, 0, this.maxOffset)
+		let force = targetOffset - this.offset
+
+		this.velocity += force * 0.08
+		this.velocity *= 0.85
+		this.offset += this.velocity
+
+		let targetAlpha = map(audioForce, 0, 60, 0, 180, true)
+
+		let alphaForce = targetAlpha - this.alpha
+		this.alphaVelocity += alphaForce * 0.1
+		this.alphaVelocity *= 0.8
+		this.alpha += this.alphaVelocity
+	}
+
+	draw(circleRadius) {
+		if (this.alpha <= 1) {
+			return
+		}
+		push()
+
+		let finalDiameter = (circleRadius + this.offset) * 2
+
+		let finalAlpha = this.alpha * this.transparency;
+
+		noStroke()
+		fill(red(primary), green(primary), blue(primary), finalAlpha)
+		ellipse(width / 2, height / 2, finalDiameter)
+		pop()
+	}
 }
