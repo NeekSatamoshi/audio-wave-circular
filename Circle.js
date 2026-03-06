@@ -79,7 +79,7 @@ class Circle {
 
 			let gradient = ctx.createRadialGradient(
 				x, y, 0,
-				x, y, this.innerRadius
+				x, y, this.innerRadius * 0.9
 			)
 
 			gradient.addColorStop(0, `rgba(${r},${g},${b},1)`)

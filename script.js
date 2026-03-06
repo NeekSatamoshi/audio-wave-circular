@@ -27,11 +27,11 @@ function setup() {
 	background(0);
 	angleMode(DEGREES);
 
-	radius = windowHeight / 6
+	radius = windowHeight / 7
 
 	fft = new p5.FFT()
 
-	amplitude = new p5.Amplitude(0.99)
+	amplitude = new p5.Amplitude(0.5)
 
 	waveform = []
 
