@@ -1,23 +1,26 @@
-let radius
-let numPoints
-let fft, amplitude
-let primaryOrig
-let waveform
-let circle
-let state = "START"
-let title = ""
-let titleColor
+let radius;
+let fft, amplitude;
+let waveform;
+let circle;
+let state = "START";
+let title = "";
+let titleColor;
 let mic;
 
+let smoothBass = 0;
+
+let circleSize = 0
+let circleVelocity = 0
+let baseSize
+
 //main color
-let primary = '#ffffff'
+let primary = "#93e4fc"
 //gradient color
 let secondary = '#ffffff'
 //background
-let bg = '#246897'
+let bg = '#596975'
 
 function setup() {
-	primaryOrig = color(primary)
 	primary = color(primary)
 	bg = color(bg)
 	secondary = color(secondary)
@@ -29,15 +32,19 @@ function setup() {
 
 	radius = windowHeight / 6
 
-	fft = new p5.FFT()
+	baseSize = radius
+	circleSize = baseSize
+	circleVelocity = 0
 
-	amplitude = new p5.Amplitude(0.99)
-
+	fft = new p5.FFT(0.8)
+	amplitude = new p5.Amplitude(0.5)
 	waveform = []
 
-	numPoints = 512
-	
-	circle = new Circle(radius, numPoints, windowWidth/2, windowHeight/2);
+	circle = new Circle(circleSize);
+
+	smoothBass = 0
+
+	pixelDensity(1)
 }
 
 function mousePressed() {
@@ -49,7 +56,6 @@ function mousePressed() {
 				amplitude.setInput(mic);
 
 				waveform = fft.waveform();
-				numPoints = waveform.length;
 
 				title = "Microphone";
 				titleColor.setAlpha(255);
@@ -85,11 +91,17 @@ function drawStart() {
 }
 
 function drawPlaying() {
-
+	fft.analyze()
 	waveform = fft.waveform()
 	ampl = amplitude.getLevel()
-	fft.analyze()
 	bass = fft.getEnergy("bass")
+
+	// subida "rápida" e descida suave
+	if (bass > smoothBass) {
+		smoothBass = lerp(smoothBass, bass, 0.10)
+	} else {
+		smoothBass = lerp(smoothBass, bass, 0.04)
+	}
 
 	background(bg)
 
@@ -98,45 +110,42 @@ function drawPlaying() {
 
 	noStroke()
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.10)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 9))
-	pop()
+	// ondas suaves
+	let layers = 20;
+	let maxRadius = radius * 6;
+	let minRadius = radius * 4;
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.20)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 8))
-	pop()
+	for (let i = 0; i < layers; i++) {
+		let t = i / (layers - 1);
+		let eased = t * t * (3.2 - 2 * t)
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.35)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 7))
-	pop()
+		let r = lerp(maxRadius, minRadius, t);
+		let alpha = lerp(0.03, 0.28, eased);
+		let c = lerpColor(bg, primary, alpha)
+		c.setAlpha(lerp(5, 60, eased));
+		fill(c);
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.40)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 6))
-	pop()
+		ellipse(centerX, centerY, map(smoothBass, 0, 255, 0, r))
+	}
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.45)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 5))
-	pop()
+	let targetExpansion = map(smoothBass, 0, 255, 0, radius * 0.1)
 
-	push()
-	fill(lerpColor(bg, primary, map(bass, 0, 255, 0, 0.5)))
-	ellipse(centerX, centerY, map(bass, 0, 255, 0, radius * 4))
-	pop()
+	let force = (baseSize + targetExpansion) - circleSize
 
-	circle.update()
+	circleVelocity += force * 0.08
+	circleVelocity *= 0.88
+	circleSize += circleVelocity
+
+	circle.r = circleSize
+
 	circle.draw()
 
 	drawTitle()
 }
 
 function draw() {
-	if (state == "START") { drawPlaying(); drawStart() }
-	if (state == "PLAYING") { drawPlaying() }
+	if (state == "START") { drawPlaying(); drawStart(); }
+	if (state == "PLAYING") { drawPlaying(); }
 }
 
 //Atualiza o fundo e o desenho Deixando Responsivo
