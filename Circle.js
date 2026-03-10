@@ -19,21 +19,24 @@ class Circle {
 		ctx.arc(0, 0, this.r, 0, Math.PI * 2)
 		ctx.clip()
 
-		// fundo neutro
-		ctx.fillStyle = "#bac1fd"
+		// fundo
+		ctx.fillStyle = "#0048ff"
 		ctx.fillRect(-this.r, -this.r, this.r * 2, this.r * 2)
 
 		const colors = [
-			"#1733ec",
-			"#792cc1",
+			"#fb00ff",
+			"#00ffc3",
+			"#c800ff",
+			"#00a2ff",
 		]
 
 		let time = millis() * 0.0003
 
-		ctx.globalCompositeOperation = "source-over"
-		ctx.filter = "blur(100px)"
+		ctx.globalCompositeOperation = "lighter"
 
-		let totalBlobs = 3
+		ctx.filter = "blur(70px) saturate(100%) brightness(30%)"
+
+		let totalBlobs = 4
 
 		for (let i = 0; i < totalBlobs; i++) {
 
@@ -42,33 +45,23 @@ class Circle {
 			let x = (noise(i * 300 + time) - 0.5) * this.r * 2.5
 			let y = (noise(i * 400 + time + 100) - 0.5) * this.r * 2.5
 
-			// RAIO MENOR = menos mistura
 			let gradient = ctx.createRadialGradient(
 				x, y, 0,
-				x, y, this.r * 0.7
+				x, y, this.r * 1.1
 			)
-			
+
 			gradient.addColorStop(0, colors[colorIndex])
-			gradient.addColorStop(0.3, colors[colorIndex])
+			gradient.addColorStop(1, colors[colorIndex])
 			gradient.addColorStop(1, "transparent")
 
 			ctx.fillStyle = gradient
 			ctx.fillRect(-this.r * 2, -this.r * 2, this.r * 4, this.r * 4)
 		}
+
 		ctx.filter = "none"
+		ctx.globalCompositeOperation = "source-over"
 
 		ctx.restore()
 		pop()
 	}
 }
-
-/* gradient1.addColorStop(0, "#b3edff")
-gradient1.addColorStop(0.4, "#99dbff")
-gradient1.addColorStop(0.7, "#47ceff")
-gradient1.addColorStop(1, "#2a7bbe") */
-
-/* COLORS SET ROXO= [
-			ctx.fillStyle = "#00CED1"
-			"#8A2BE2",
-			"#000080"
-		] */
