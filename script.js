@@ -51,7 +51,7 @@ function setup() {
 
 	ripple1 = new LiveRipple(75, 0.2)
 	ripple2 = new LiveRipple(150, 0.1)
-	
+
 	circle = new Circle(circleSize)
 	smoothBass = 0
 }
@@ -130,7 +130,7 @@ function drawPlaying() {
 	ripple1.draw(circle.r)
 	ripple2.draw(circle.r)
 	circle.draw()
-	
+
 	drawTitle();
 }
 
