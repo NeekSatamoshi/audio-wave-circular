@@ -20,13 +20,13 @@ class Circle {
 		ctx.clip()
 
 		// fundo neutro
-		ctx.fillStyle = "#93e1f9"
+		ctx.fillStyle = "#70bbd2"
 		ctx.fillRect(-this.r, -this.r, this.r * 2, this.r * 2)
 
 		const colors = [
-			"#056cb1",
-			"#3676aa",
-			"#61aae5",
+			"#008cff",
+			"#fb00ff",
+			"#1100ff",
 		]
 
 		let time = millis() * 0.0003
@@ -49,7 +49,7 @@ class Circle {
 			)
 
 			gradient.addColorStop(0, colors[colorIndex])
-			gradient.addColorStop(0.5, colors[colorIndex])
+			gradient.addColorStop(1, colors[colorIndex])
 			gradient.addColorStop(1, "transparent")
 
 			noStroke()
