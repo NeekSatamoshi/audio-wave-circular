@@ -8,10 +8,7 @@ let titleColor;
 let mic;
 
 let smoothBass = 0;
-let ripples = []
 let threshold = 80
-let lastRippleTime = 0
-let rippleDelay = 250
 let showTitle = false
 let titleAlpha = 0
 
@@ -19,27 +16,61 @@ let circleSize = 0
 let circleVelocity = 0
 let baseSize
 
+let ripples = []
+
 let ripple1
 let ripple2
+let ripple3
+let ripple4
 
 //main color
-let primary = '#61aae5'
+let colorRipple = '#ffffff'
 //gradient color
-let secondary = '#ffffff'
-//background
-let bg = '#596975'
+let colorText = '#ffffff'
+
+let bgGradient;
+let c1
+let c2
+let c3
+
+let wid, heig;
+
+function createBackground() {
+	bgGradient = createGraphics(windowWidth, windowHeight);
+
+	c1 = color('#45A3D7') //esquerda
+	c2 = color('#2887BC') //meio
+	c3 = color('#206D97') //direita
+
+	let colWidth = bgGradient.width / 3
+
+	bgGradient.noStroke()
+
+	bgGradient.fill(c1)
+	bgGradient.rect(0, 0, colWidth, bgGradient.height)
+
+	bgGradient.fill(c2)
+	bgGradient.rect(colWidth, 0, colWidth, bgGradient.height)
+
+	bgGradient.fill(c3)
+	bgGradient.rect(colWidth * 2, 0, colWidth, bgGradient.height)
+}
 
 function setup() {
-	primary = color(primary)
-	bg = color(bg)
-	secondary = color(secondary)
-	titleColor = color(secondary)
+	createBackground()
+
+	colorRipple = color(colorRipple)
+	colorText = color(colorText)
+	titleColor = color(colorText)
 
 	createCanvas(windowWidth, windowHeight);
 	angleMode(DEGREES);
 	pixelDensity(1)
 
-	radius = windowHeight / 6
+	radius = windowHeight / 10
+
+	wid = width / 2
+	heig = height / 2.5
 
 	baseSize = radius
 	circleSize = baseSize
@@ -49,10 +80,14 @@ function setup() {
 	amplitude = new p5.Amplitude(0.5)
 	waveform = []
 
-	ripple1 = new LiveRipple(80, 0.2, 0)
-	ripple2 = new LiveRipple(160, 0.1, 10)
+	ripple1 = new LiveRipple(60, 0.4, 0)
+	ripple2 = new LiveRipple(120, 0.4, 15)
+	ripple3 = new LiveRipple(180, 0.4, 15)
+	ripple4 = new LiveRipple(190, 0.4, 18)
 
-	circle = new Circle(circleSize)
+	ripples.push(ripple1, ripple2, ripple3, ripple4)
+
+	circle = new Circle(circleSize, wid, heig)
 	smoothBass = 0
 }
 
@@ -60,14 +95,20 @@ function mousePressed() {
 	userStartAudio().then(() => {
 		if (state === "START") {
 			mic = new p5.AudioIn();
+			/* mic.getSources(gotSources) */
 			mic.start(() => {
 				fft.setInput(mic);
-				amplitude.setInput(mic);
+				amplitude.setInput();
 				title = "Microphone";
 				titleAlpha = 255;
 				showTitle = true;
 				state = "PLAYING";
+
+				//Mutar e Desmutar o Audio
+				mic.connect()
 			});
+
+
 
 		} else if (state === "PLAYING") {
 			mic.stop();
@@ -103,7 +144,7 @@ function drawTitle() {
 
 function drawStart() {
 	push()
-	fill(secondary)
+	fill(colorText)
 	textSize(100)
 	textAlign(CENTER, CENTER)
 	pop()
@@ -112,36 +153,42 @@ function drawStart() {
 function drawPlaying() {
 	fft.analyze()
 	let bass = fft.getEnergy("bass")
+	let mid = fft.getEnergy("highMid")
 	smoothBass = lerp(smoothBass, bass, 0.08)
 
 	let targetExpansion = map(smoothBass, 0, 255, 0, radius * 0.35)
 
-	let force = (baseSize + targetExpansion) - circleSize
-
+	
 	if (smoothBass > 80) {
 		circle.mic = true;
 	} else {
 		circle.mic = false;
 	}
 
-	circleVelocity += force * 0.08
-	circleVelocity *= 0.88
+	let force = (baseSize + targetExpansion) - circleSize
+	
+	circleVelocity += force * 0.05
+	circleVelocity *= 0.85
 	circleSize += circleVelocity
 
 	circle.r = circleSize
 
-	ripple1.update(smoothBass)
-	ripple2.update(smoothBass)
+	ripples.forEach(ripple => {
+		ripple.update(smoothBass + mid)
+		ripple.draw(circle.r)
+	})
 
-	ripple1.draw(circle.r)
-	ripple2.draw(circle.r)
 	circle.draw()
 
 	drawTitle();
 }
 
+/**
+ * Desenha o background e o círculo inicial, caso no estado "START",
+ * e utiliza a função drawPlaying, caso no estado "PLAYING".
+ */
 function draw() {
-	background(bg);
+	image(bgGradient, 0, 0, width, height)
 
 	if (state == "PLAYING") {
 		drawPlaying();
@@ -153,21 +200,22 @@ function draw() {
 		circleSize += circleVelocity
 		circle.r = circleSize
 
-		ripple1.update(0)
-		ripple2.update(0)
+		ripples.forEach(ripple => {
+			ripple.update(0)
+			ripple.draw(circleSize)
+		})
 
 		circle.draw()
-		ripple1.draw(circleSize)
-		ripple2.draw(circleSize)
 
 		drawTitle()
 	}
 }
 
-//Atualiza o fundo e o desenho Deixando Responsivo
+/** 
+* Atualiza o fundo e o desenho deixando responsivo 
+*/
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight)
-	background(bg)
 }
 
 class LiveRipple {
@@ -227,10 +275,10 @@ class LiveRipple {
 		let finalAlpha = this.alpha * this.transparency
 
 		noStroke()
-		let rippleColor = color(primary)
+		let rippleColor = color(colorRipple)
 		rippleColor.setAlpha(finalAlpha)
 		fill(rippleColor)
-		ellipse(width/2, height/2, finalDiameter)
+		ellipse(wid, heig, finalDiameter)
 		pop()
 	}
 }

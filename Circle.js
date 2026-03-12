@@ -1,6 +1,8 @@
 class Circle {
-	constructor(r) {
+	constructor(r, wid, heig) {
 		this.r = r;
+		this.wid = wid;
+		this.heig = heig;
 		this.rotation = random(TWO_PI);
 		this.mic = false;
 		this.time = millis();
@@ -12,7 +14,7 @@ class Circle {
 		let ctx = drawingContext
 
 		push()
-		translate(width / 2, height / 2)
+		translate(this.wid, this.heig)
 
 		ctx.save()
 
@@ -21,14 +23,14 @@ class Circle {
 		ctx.arc(0, 0, this.r, 0, Math.PI * 2)
 		ctx.clip()
 
-		// fundo neutro
-		ctx.fillStyle = "#7492f3"
+		ctx.fillStyle = "#87b3d4"
+
 		ctx.fillRect(-this.r, -this.r, this.r * 2, this.r * 2)
 
 		const colors = [
-			"#0077ff",
-			"#47ceff",
-			"#b0e1fb",
+			"#ffffff",
+			"#00a3ff",
+			"#006AC5",
 		]
 
 		if (!this.mic) {
