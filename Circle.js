@@ -1,4 +1,13 @@
+/**
+ * @class Círculo principal
+ */
 class Circle {
+	/**
+	 * @constructor
+	 * @param {number} r Raio do círculo
+	 * @param {number} wid Largura do círculo
+	 * @param {number} heig Altura do círculo
+	 */
 	constructor(r, wid, heig) {
 		this.r = r;
 		this.wid = wid;
@@ -10,22 +19,21 @@ class Circle {
 		this.pg.pixelDensity(1);
 	}
 
+	/**
+	 * Função que desenha o círculo e o mesh gradient interno
+	 */
 	draw() {
 		let ctx = drawingContext
 
 		push()
 		translate(this.wid, this.heig)
 
-		ctx.save()
-
-		// máscara circular
+		// máscara do círculo para conter o mesh
 		ctx.beginPath()
 		ctx.arc(0, 0, this.r, 0, Math.PI * 2)
 		ctx.clip()
 
 		ctx.fillStyle = "#87b3d4"
-
-		ctx.fillRect(-this.r, -this.r, this.r * 2, this.r * 2)
 
 		const colors = [
 			"#ffffff",
@@ -43,7 +51,6 @@ class Circle {
 		ctx.filter = "blur(35px)"
 
 		let totalBlobs = 6;
-
 
 		for (let i = 1; i <= totalBlobs; i++) {
 			let angle = rotation + i * (360 / totalBlobs)
@@ -69,9 +76,16 @@ class Circle {
 			ctx.fillRect(-this.r * 2, -this.r * 2, this.r * 4, this.r * 4)
 		}
 
-		ctx.filter = "none"
-
-		ctx.restore()
 		pop()
+	}
+
+	/**
+	 * Atualiza posição do círculo
+	 * @param {number} wid Nova largura do círculo
+	 * @param {number} heig Nova altura do círculo
+	 */
+	windowResized(wid, heig) {
+		this.wid = wid
+		this.heig = heig
 	}
 }

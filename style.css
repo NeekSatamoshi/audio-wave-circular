@@ -5,10 +5,15 @@ canvas {
 	min-width: 100%;
 	width: 100%;
 	height: auto;
-	position: fixed;
+	position: absolute;
 	top: 0;
 	left: 0;
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
+}
+
+body {
+	background-image: url("./img/Top.svg");
+	background-size: cover;
 }
