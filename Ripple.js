@@ -73,9 +73,8 @@ class LiveRipple {
         let finalAlpha = this.alpha * this.transparency
 
         noStroke()
-        let rippleColor = color(colorRipple)
-        rippleColor.setAlpha(finalAlpha)
-        fill(rippleColor)
+        colorRipple.setAlpha(finalAlpha)
+        fill(colorRipple)
         ellipse(wid, heig, finalDiameter)
         pop()
     }
