@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "rootDir": "./",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "es2023",
+    "lib": ["es2023", "DOM", "DOM.iterable"],
+    "types": ["node"],
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "strict": true,
+    "jsx": "react-jsx",
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
+}
