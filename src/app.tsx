@@ -9,7 +9,6 @@ function sketch(p: P5CanvasInstance) {
   // Sound vars
   let audioCtx: AudioContext;
   let analyser: AnalyserNode;
-  let dataArray: Uint8Array<ArrayBuffer>;
   let freqData: Uint8Array<ArrayBuffer>;
   let micStarted = false;
   let smoothBass = 0;
@@ -70,7 +69,6 @@ function sketch(p: P5CanvasInstance) {
 
     source.connect(analyser);
 
-    dataArray = new Uint8Array(analyser.fftSize);
     freqData = new Uint8Array(analyser.frequencyBinCount);
 
     micStarted = true;
