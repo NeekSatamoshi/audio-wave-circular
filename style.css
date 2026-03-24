@@ -1,6 +1,5 @@
 html,
 body,
-canvas,
 div {
 	min-height: 100%;
 	min-width: 100%;
@@ -14,13 +13,20 @@ div {
 	overflow: hidden;
 }
 
+canvas {
+	position: fixed;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+}
+
 body {
 	background-size: cover;
 }
 
-.mask {
+/* .mask {
 	position: relative;
-	z-index: 1;
+	z-index: 2;
 	display: grid;
 	justify-content: center;
 	top: calc(10%);
@@ -44,4 +50,4 @@ body {
 	bottom: 22%;
 	max-width: 80%;
 	max-height: 50%;
-}
+} */

@@ -75,7 +75,6 @@ class Circle {
 			ctx.fillStyle = gradient
 			ctx.fillRect(-this.r * 2, -this.r * 2, this.r * 4, this.r * 4)
 		}
-
 		pop()
 	}
 

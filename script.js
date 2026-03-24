@@ -50,16 +50,17 @@ function createBackground() {
  * tamanhos, objetos, entre outros.
  */
 function setup() {
-	createBackground()
-
 	colorRipple = color(colorRipple)
-
+	
 	createCanvas(windowWidth, windowHeight);
 	angleMode(DEGREES);
 	pixelDensity(1)
+	
+	createBackground()
 
-	radius = windowHeight / 10
+	body = loadImage("./img/corpo_mula.png")
 
+	radius = windowHeight / 12.8
 	wid = windowWidth / 2
 	heig = windowHeight / 2.5
 
@@ -70,10 +71,15 @@ function setup() {
 	amplitude = new p5.Amplitude(0.5)
 	waveform = []
 
-	ripple1 = new LiveRipple(60, 0.4, 0)
-	ripple2 = new LiveRipple(120, 0.4, 10)
-	ripple3 = new LiveRipple(180, 0.4, 15)
-	ripple4 = new LiveRipple(190, 0.4, 18)
+/* 	ripple1 = new LiveRipple(60, 0.4, 0)
+	ripple2 = new LiveRipple(120, 0.4, 3)
+	ripple3 = new LiveRipple(180, 0.4, 6)
+	ripple4 = new LiveRipple(190, 0.4, 9) */
+
+	ripple1 = new LiveRipple(90, 0.4, 0)
+	ripple2 = new LiveRipple(150, 0.4, 3)
+	ripple3 = new LiveRipple(210, 0.4, 6)
+	ripple4 = new LiveRipple(230, 0.4, 9)
 
 	ripples.push(ripple1, ripple2, ripple3, ripple4)
 
@@ -96,36 +102,40 @@ function setup() {
  * Função que desenha o background, círculo e calcula a força do áudio para desenhar as ondas e a expansão do círculo.
  */
 function draw() {
-	image(bgGradient, 0, 0, width, height)
-
+	image(bgGradient, 0, 0, windowWidth, windowHeight)
+	
 	fft.analyze()
 	let bass = fft.getEnergy("bass")
 	let mid = fft.getEnergy("highMid")
 	smoothBass = lerp(smoothBass, bass, 0.08)
-
+	
 	let targetExpansion = map(smoothBass, 0, 255, 0, radius * 0.35)
-
+	
 	if (smoothBass > 80) {
 		circle.mic = true;
 	} else {
 		circle.mic = false;
 	}
-
+	
 	let force = (radius + targetExpansion) - circleSize
-
+	
 	circleVelocity += force * 0.05
 	circleVelocity *= 0.85
 	circleSize += circleVelocity
-
+	
 	circle.r = circleSize
 
+	push()
+	imageMode(windowWidth)
+	image(body, windowWidth * 0.23, windowHeight * 0.15)
+	pop()
+	
 	ripples.forEach(ripple => {
 		ripple.update(smoothBass + mid)
 		ripple.draw(circle.r)
 	})
-
+	
 	circle.draw()
-
 }
 
 /** 
