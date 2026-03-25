@@ -71,11 +71,6 @@ function setup() {
 	amplitude = new p5.Amplitude(0.5)
 	waveform = []
 
-/* 	ripple1 = new LiveRipple(60, 0.4, 0)
-	ripple2 = new LiveRipple(120, 0.4, 3)
-	ripple3 = new LiveRipple(180, 0.4, 6)
-	ripple4 = new LiveRipple(190, 0.4, 9) */
-
 	ripple1 = new LiveRipple(90, 0.4, 0)
 	ripple2 = new LiveRipple(150, 0.4, 3)
 	ripple3 = new LiveRipple(210, 0.4, 6)
@@ -126,8 +121,15 @@ function draw() {
 	circle.r = circleSize
 
 	push()
-	imageMode(windowWidth)
-	image(body, windowWidth * 0.23, windowHeight * 0.15)
+
+	imageMode(CENTER);
+
+	let base = min(windowWidth, windowHeight);
+	let imgWidth = radius * 4.5;
+	let imgHeight = imgWidth * (body.height / body.width);
+	
+
+	image(body, wid, heig * 1.12, imgWidth, imgHeight);
 	pop()
 	
 	ripples.forEach(ripple => {
@@ -143,8 +145,12 @@ function draw() {
 */
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight)
+
 	wid = windowWidth / 2
 	heig = windowHeight / 2.5
-	radius = windowHeight / 10
+
+	radius = windowHeight / 12.8
+	baseRadius = radius;
+
 	circle.windowResized(wid, heig)
 }
