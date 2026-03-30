@@ -71,10 +71,15 @@ function setup() {
 	amplitude = new p5.Amplitude(0.5)
 	waveform = []
 
-	ripple1 = new LiveRipple(90, 0.4, 0)
+	ripple1 = new LiveRipple(60, 0.4, 0)
+	ripple2 = new LiveRipple(100, 0.4, 3)
+	ripple3 = new LiveRipple(140, 0.4, 6)
+	ripple4 = new LiveRipple(150, 0.4, 9)
+
+/* 	ripple1 = new LiveRipple(90, 0.4, 0)
 	ripple2 = new LiveRipple(150, 0.4, 3)
 	ripple3 = new LiveRipple(210, 0.4, 6)
-	ripple4 = new LiveRipple(230, 0.4, 9)
+	ripple4 = new LiveRipple(230, 0.4, 9) */
 
 	ripples.push(ripple1, ripple2, ripple3, ripple4)
 
