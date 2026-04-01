@@ -1,6 +1,6 @@
+import p5 from "p5";
 import { P5CanvasInstance, P5Canvas } from "@p5-wrapper/react";
 import Circle from "./circle";
-import p5 from "p5";
 import Ripple from "./ripple";
 
 function sketch(p: P5CanvasInstance) {
@@ -49,18 +49,37 @@ function sketch(p: P5CanvasInstance) {
   const initAudio = async () => {
     if (micStarted) return;
 
+    let inputDevice: MediaDeviceInfo = {
+      groupId: "",
+      deviceId: "",
+      label: "",
+      kind: "audioinput",
+      toJSON() {
+        return { groupId: this.groupId, deviceId: this.deviceId, label: this.label, kind: this.kind };
+      },
+    };
+
+    await navigator.mediaDevices.enumerateDevices().then(
+      (devices) => {
+        devices.forEach((device) => {
+          // console.log(`${device.label} - ${device.kind} - ${device.deviceId}`);
+          if (device.kind === "audioinput" && device.label.toLocaleLowerCase().includes("cable output")) {
+            inputDevice = device;
+            // console.log("Conectado com sucesso");
+          }
+        });
+      },
+      () => {
+        alert("Failed to get media devices!");
+      },
+    );
+
     audioCtx = new AudioContext();
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        deviceId: "TtQSzDjP2shZsiwJ4ak3HLpe1Wpxtro8abaGT63I2BE=",
+        deviceId: inputDevice.deviceId,
       },
     });
-
-    // const devices = await navigator.mediaDevices.enumerateDevices();
-
-    // devices.forEach((device) => {
-    //   console.log(device.kind, device.label, device.deviceId);
-    // });
 
     const source = audioCtx.createMediaStreamSource(stream);
 
@@ -113,9 +132,9 @@ function sketch(p: P5CanvasInstance) {
     circle = new Circle(p, circleSize, width, height);
 
     ripple1 = new Ripple(p, 60, 0, colorRipple);
-    ripple2 = new Ripple(p, 120, 10, colorRipple);
-    ripple3 = new Ripple(p, 180, 15, colorRipple);
-    ripple4 = new Ripple(p, 190, 18, colorRipple);
+    ripple2 = new Ripple(p, 120, 2, colorRipple);
+    ripple3 = new Ripple(p, 180, 6, colorRipple);
+    ripple4 = new Ripple(p, 190, 10, colorRipple);
 
     ripples.push(ripple1, ripple2, ripple3, ripple4);
 
