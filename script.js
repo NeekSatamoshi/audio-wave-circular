@@ -71,15 +71,15 @@ function setup() {
 	amplitude = new p5.Amplitude(0.5)
 	waveform = []
 
-	ripple1 = new LiveRipple(60, 0.4, 0)
+/* 	ripple1 = new LiveRipple(60, 0.4, 0)
 	ripple2 = new LiveRipple(100, 0.4, 3)
 	ripple3 = new LiveRipple(140, 0.4, 6)
-	ripple4 = new LiveRipple(150, 0.4, 9)
+	ripple4 = new LiveRipple(150, 0.4, 9) */
 
-/* 	ripple1 = new LiveRipple(90, 0.4, 0)
-	ripple2 = new LiveRipple(150, 0.4, 3)
-	ripple3 = new LiveRipple(210, 0.4, 6)
-	ripple4 = new LiveRipple(230, 0.4, 9) */
+	ripple1 = new LiveRipple(40, 0.4, 0)
+	ripple2 = new LiveRipple(80, 0.4, 3)
+	ripple3 = new LiveRipple(120, 0.4, 6)
+	ripple4 = new LiveRipple(130, 0.4, 9)
 
 	ripples.push(ripple1, ripple2, ripple3, ripple4)
 
@@ -97,7 +97,6 @@ function setup() {
 	});
 }
 
-
 /**
  * Função que desenha o background, círculo e calcula a força do áudio para desenhar as ondas e a expansão do círculo.
  */
@@ -106,16 +105,10 @@ function draw() {
 	
 	fft.analyze()
 	let bass = fft.getEnergy("bass")
-	let mid = fft.getEnergy("highMid")
+	let high = fft.getEnergy("highMid")
 	smoothBass = lerp(smoothBass, bass, 0.08)
 	
 	let targetExpansion = map(smoothBass, 0, 255, 0, radius * 0.35)
-	
-	if (smoothBass > 80) {
-		circle.mic = true;
-	} else {
-		circle.mic = false;
-	}
 	
 	let force = (radius + targetExpansion) - circleSize
 	
@@ -138,7 +131,7 @@ function draw() {
 	pop()
 	
 	ripples.forEach(ripple => {
-		ripple.update(smoothBass + mid)
+		ripple.update(smoothBass + high * random(0,3))
 		ripple.draw(circle.r)
 	})
 	

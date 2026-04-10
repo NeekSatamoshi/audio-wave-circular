@@ -13,7 +13,6 @@ class Circle {
 		this.wid = wid;
 		this.heig = heig;
 		this.rotation = random(TWO_PI);
-		this.mic = false;
 		this.time = millis();
 		this.pg = createGraphics(this.r * 2, this.r * 2);
 		this.pg.pixelDensity(1);
@@ -41,9 +40,7 @@ class Circle {
 			"#006AC5",
 		]
 
-		if (!this.mic) {
-			this.rotation += 0.5;
-		}
+		this.rotation += 0.35;
 
 		let rotation = this.rotation;
 
